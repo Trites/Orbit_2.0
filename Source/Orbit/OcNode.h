@@ -1,0 +1,54 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include <list>
+#include <vector>
+#include "Body.h"
+
+/**
+*
+*/
+class ORBIT_API OcNode
+{
+public:
+
+	struct CenterMass{
+
+		FVector position;
+		float mass;
+
+		void adjust(const FVector& otherPosition, const float& otherMass){
+
+			position = (mass*position + otherMass*otherPosition) / (mass + otherMass);
+			mass += otherMass;
+		}
+	};
+
+	const unsigned int MAX_OBJECTS = 1;
+	static const unsigned int CHILD_COUNT = 8;
+	const float DEBUG_THIKNESS = 2.0f;
+
+	OcNode() = delete;
+	OcNode(FVector origin, FVector size);
+	~OcNode();
+
+	void draw(UWorld *world);
+	bool insert(ABody* body);
+	void insert(std::vector<ABody*> bodies);
+
+	CenterMass centerMass;
+
+private:
+	FVector origin;
+	FVector size;
+
+	bool isLeaf;
+	int objectCount;
+	OcNode *children[CHILD_COUNT];
+	std::list<ABody*> objects;
+
+	void split();
+	std::size_t indexOf(const FVector& point) const;
+
+};
