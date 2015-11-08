@@ -4,6 +4,7 @@
 
 #include <list>
 #include <vector>
+#include <unordered_set>
 #include "Body.h"
 
 /**
@@ -12,14 +13,11 @@
 class ORBIT_API OcNode
 {
 public:
-
 	struct CenterMass{
-
 		FVector position;
 		float mass;
 
 		void adjust(const FVector& otherPosition, const float& otherMass){
-
 			position = (mass*position + otherMass*otherPosition) / (mass + otherMass);
 			mass += otherMass;
 		}
@@ -36,8 +34,10 @@ public:
 	void draw(UWorld *world);
 	bool insert(ABody* body);
 	void insert(std::vector<ABody*> bodies);
+	bool contains(ABody* body) const;
 
 	CenterMass centerMass;
+	OcNode *children[CHILD_COUNT];
 
 private:
 	FVector origin;
@@ -45,8 +45,8 @@ private:
 
 	bool isLeaf;
 	int objectCount;
-	OcNode *children[CHILD_COUNT];
-	std::list<ABody*> objects;
+
+	std::unordered_set<ABody*> objects;
 
 	void split();
 	std::size_t indexOf(const FVector& point) const;

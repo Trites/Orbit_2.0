@@ -73,7 +73,7 @@ bool OcNode::insert(ABody* body){
 		//Otherwise we split the node.
 		if (objects.size() < MAX_OBJECTS){
 
-			objects.push_back(body);
+			objects.insert(body);
 		}
 		else{
 
@@ -99,11 +99,15 @@ bool OcNode::insert(ABody* body){
 	return false;
 }
 
-
 void OcNode::insert(std::vector<ABody*> bodies){
 
 	for (ABody* body : bodies)
 		insert(body);
+}
+
+bool OcNode::contains(ABody* body) const{
+
+	return objects.count(body) != 0;
 }
 
 void OcNode::split(){

@@ -25,7 +25,8 @@ public:
 
 private:
 	std::vector<ABody*> Bodies;
-
 	OcNode *ocNode;
+
+	void CalculateForce(ABody* body, const OcNode* node, float DeltaTime);
 	
 };
