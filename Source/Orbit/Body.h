@@ -24,11 +24,13 @@ public:
 	void AddVelocity(const FVector& v);
 	void ApplyForce(const FVector& f);
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Body")
-	float mass;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Body")
+	float mass = 300.0f;
 
 private:
 
 	float runningTime;
 	FVector velocity;
+
+	UStaticMeshComponent* mesh;
 };

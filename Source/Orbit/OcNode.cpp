@@ -12,6 +12,7 @@ OcNode::OcNode(FVector origin, FVector size)
 	centerMass.position = FVector::ZeroVector;
 	centerMass.mass = 0.0f;
 	objectCount = 0;
+	storedBody = nullptr;
 }
 
 OcNode::~OcNode()
@@ -28,37 +29,37 @@ void OcNode::draw(UWorld *world){
 			child->draw(world);
 
 
-		//if (objectCount > 0)
-		//	DrawDebugPoint(world, centerMass.position, 16, FColor::Green);
+		if (objectCount > 0)
+			DrawDebugPoint(world, centerMass.position, 16, FColor::Green);
 	}
 	else{
 
-		//FColor renderColor = objectCount > 0 ? FColor::Red : FColor::Blue;
+		FColor renderColor = objectCount > 0 ? FColor::Red : FColor::Blue;
 
-		//FVector topLeftBack(origin.X - size.X/2, origin.Y + size.Y/2, origin.Z - size.Z/2);
-		//FVector topRightBack(origin.X + size.X / 2, origin.Y + size.Y / 2, origin.Z - size.Z / 2);
-		//FVector bottomLeftBack(origin.X - size.X / 2, origin.Y - size.Y / 2, origin.Z - size.Z / 2);
-		//FVector bottomRightBack(origin.X + size.X / 2, origin.Y - size.Y / 2, origin.Z - size.Z / 2);
+		FVector topLeftBack(origin.X - size.X/2, origin.Y + size.Y/2, origin.Z - size.Z/2);
+		FVector topRightBack(origin.X + size.X / 2, origin.Y + size.Y / 2, origin.Z - size.Z / 2);
+		FVector bottomLeftBack(origin.X - size.X / 2, origin.Y - size.Y / 2, origin.Z - size.Z / 2);
+		FVector bottomRightBack(origin.X + size.X / 2, origin.Y - size.Y / 2, origin.Z - size.Z / 2);
 
-		//FVector topLeftFront(origin.X - size.X / 2, origin.Y + size.Y / 2, origin.Z + size.Z / 2);
-		//FVector topRightFront(origin.X + size.X / 2, origin.Y + size.Y / 2, origin.Z + size.Z / 2);
-		//FVector bottomLeftFront(origin.X - size.X / 2, origin.Y - size.Y / 2, origin.Z + size.Z / 2);
-		//FVector bottomRightFront(origin.X + size.X / 2, origin.Y - size.Y / 2, origin.Z + size.Z / 2);
+		FVector topLeftFront(origin.X - size.X / 2, origin.Y + size.Y / 2, origin.Z + size.Z / 2);
+		FVector topRightFront(origin.X + size.X / 2, origin.Y + size.Y / 2, origin.Z + size.Z / 2);
+		FVector bottomLeftFront(origin.X - size.X / 2, origin.Y - size.Y / 2, origin.Z + size.Z / 2);
+		FVector bottomRightFront(origin.X + size.X / 2, origin.Y - size.Y / 2, origin.Z + size.Z / 2);
 
-		//DrawDebugLine(world, topLeftBack, topRightBack, renderColor, false, -1, 0, DEBUG_THIKNESS);
-		//DrawDebugLine(world, topRightBack, bottomRightBack, renderColor, false, -1, 0, DEBUG_THIKNESS);
-		//DrawDebugLine(world, bottomRightBack, bottomLeftBack, renderColor, false, -1, 0, DEBUG_THIKNESS);
-		//DrawDebugLine(world, bottomLeftBack, topLeftBack, renderColor, false, -1, 0, DEBUG_THIKNESS);
+		DrawDebugLine(world, topLeftBack, topRightBack, renderColor, false, -1, 0, DEBUG_THIKNESS);
+		DrawDebugLine(world, topRightBack, bottomRightBack, renderColor, false, -1, 0, DEBUG_THIKNESS);
+		DrawDebugLine(world, bottomRightBack, bottomLeftBack, renderColor, false, -1, 0, DEBUG_THIKNESS);
+		DrawDebugLine(world, bottomLeftBack, topLeftBack, renderColor, false, -1, 0, DEBUG_THIKNESS);
 
-		//DrawDebugLine(world, topLeftFront, topRightFront, renderColor, false, -1, 0, DEBUG_THIKNESS);
-		//DrawDebugLine(world, topRightFront, bottomRightFront, renderColor, false, -1, 0, DEBUG_THIKNESS);
-		//DrawDebugLine(world, bottomRightFront, bottomLeftFront, renderColor, false, -1, 0, DEBUG_THIKNESS);
-		//DrawDebugLine(world, bottomLeftFront, topLeftFront, renderColor, false, -1, 0, DEBUG_THIKNESS);
+		DrawDebugLine(world, topLeftFront, topRightFront, renderColor, false, -1, 0, DEBUG_THIKNESS);
+		DrawDebugLine(world, topRightFront, bottomRightFront, renderColor, false, -1, 0, DEBUG_THIKNESS);
+		DrawDebugLine(world, bottomRightFront, bottomLeftFront, renderColor, false, -1, 0, DEBUG_THIKNESS);
+		DrawDebugLine(world, bottomLeftFront, topLeftFront, renderColor, false, -1, 0, DEBUG_THIKNESS);
 
-		//DrawDebugLine(world, topLeftBack, topLeftFront, renderColor, false, -1, 0, DEBUG_THIKNESS);
-		//DrawDebugLine(world, topRightBack, topRightFront, renderColor, false, -1, 0, DEBUG_THIKNESS);
-		//DrawDebugLine(world, bottomRightBack, bottomRightFront, renderColor, false, -1, 0, DEBUG_THIKNESS);
-		//DrawDebugLine(world, bottomLeftBack, bottomLeftFront, renderColor, false, -1, 0, DEBUG_THIKNESS);
+		DrawDebugLine(world, topLeftBack, topLeftFront, renderColor, false, -1, 0, DEBUG_THIKNESS);
+		DrawDebugLine(world, topRightBack, topRightFront, renderColor, false, -1, 0, DEBUG_THIKNESS);
+		DrawDebugLine(world, bottomRightBack, bottomRightFront, renderColor, false, -1, 0, DEBUG_THIKNESS);
+		DrawDebugLine(world, bottomLeftBack, bottomLeftFront, renderColor, false, -1, 0, DEBUG_THIKNESS);
 	}
 }
 
@@ -67,24 +68,31 @@ bool OcNode::insert(ABody* body){
 	centerMass.adjust(body->GetActorLocation(), body->mass);
 	objectCount++;
 
-	objects.insert(body);
+	//objects.insert(body);
+
 
 	if (isLeaf){
 
 		//If there is still room in this node we insert the new body.
 		//Otherwise we split the node.
-		if (objects.size() > MAX_OBJECTS){
+		if (storedBody == nullptr){
+
+			storedBody = body;
+		}
+		else{
 
 			split();
-
 			////Insert new body into the appropriate child node.
 			children[indexOf(body->GetActorLocation())]->insert(body);
 
-			////Move all objects contained in this node to the appropriate child node.
-			for (ABody* oldBody : objects){
+			children[indexOf(storedBody->GetActorLocation())]->insert(storedBody);
+			storedBody = nullptr;
 
-				children[indexOf(oldBody->GetActorLocation())]->insert(oldBody);
-			}
+			////Move all objects contained in this node to the appropriate child node.
+			//for (ABody* oldBody : objects){
+
+			//	children[indexOf(oldBody->GetActorLocation())]->insert(oldBody);
+			//}
 			//objects.clear();
 		}
 	}
@@ -105,8 +113,16 @@ void OcNode::insert(std::vector<ABody*> bodies){
 
 bool OcNode::contains(ABody* body){
 
-	//return false;
-	return objects.count(body) != 0;
+	if (storedBody == nullptr)
+		return false;
+
+	return storedBody == body;
+	//return objects.count(body) != 0;
+}
+
+const FVector& OcNode::getSize() const{
+
+	return size;
 }
 
 void OcNode::split(){

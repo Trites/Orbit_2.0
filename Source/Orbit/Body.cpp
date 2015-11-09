@@ -11,14 +11,13 @@ ABody::ABody()
 	PrimaryActorTick.bCanEverTick = true;
 	velocity = FVector::ZeroVector;
 
-	mass = 100;
 }
 
 // Called when the game starts or when spawned
 void ABody::BeginPlay()
 {
 	Super::BeginPlay();
-
+	mesh = FindComponentByClass<UStaticMeshComponent>();
 }
 
 // Called every frame
@@ -29,6 +28,7 @@ void ABody::Tick( float DeltaTime )
 	FVector newLocation = GetActorLocation();
 	newLocation += velocity * DeltaTime;
 	SetActorLocation(newLocation);
+	//mesh->ComponentVelocity = velocity;
 }
 
 void ABody::SetVelocity(const FVector& v){

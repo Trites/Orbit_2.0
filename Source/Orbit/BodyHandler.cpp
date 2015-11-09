@@ -19,23 +19,19 @@ void ABodyHandler::BeginPlay()
 {
 	Super::BeginPlay();
 
-	SpawnDisc(FVector::ZeroVector, 1000, 800);
-	int c = 0;
+	int m = 0;
+	//Find bodies that are already active in the scene.
 	for (TActorIterator<ABody> it(GetWorld()); it; ++it){
 
-		c++;
-		//SetInitialVelocity(*it);
+
 		Bodies.push_back(*it);
 	}
 
+	//Spawn new bodies
+	SpawnDisc(FVector::ZeroVector, 1500, 2000);
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Simulating %i bodies."), Bodies.size()));
-
-	//FActorSpawnParameters spawnParams;
-	//spawnParams.Owner = this;
-
 }
 
-// Called every frame
 void ABodyHandler::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -45,36 +41,66 @@ void ABodyHandler::Tick(float DeltaTime)
 
 	GetGalaxyArea(galaxyCenter, galaxySize);
 
-	delete ocNode;
+
 	ocNode = new OcNode(galaxyCenter, FVector(galaxySize, galaxySize, galaxySize));
 	ocNode->insert(Bodies);
-	ocNode->draw(GetWorld());
+	//ocNode->draw(GetWorld());
 
 	for (ABody* body : Bodies)
 		CalculateForce(body, ocNode, DeltaTime);
+
+	delete ocNode;
 }
 
 void ABodyHandler::CalculateForce(ABody* body, OcNode* node, float DeltaTime){
 
-	if (node->contains(body) == false){
+	OcNode::CenterMass centerMass = node->centerMass;
 
-		OcNode::CenterMass centerMass = node->centerMass;
+	if (centerMass.mass > 0){
 
-		if (centerMass.mass > 0 && FVector::DistSquared(body->GetActorLocation(), centerMass.position) > 100){
+		//Assume grid is uniform
+		float theta = node->getSize().X / FVector::DistSquared(body->GetActorLocation(), centerMass.position);
 
-			FVector direction = (centerMass.position - body->GetActorLocation()).GetSafeNormal();
-			float force = (10.0f * body->mass * centerMass.mass) / FVector::DistSquared(centerMass.position, body->GetActorLocation());
-			body->ApplyForce(DeltaTime * force * direction);
+		if (node->isLeaf || theta*theta < MAX_THETA_SQUARED){
+
+			if (node->contains(body) == false){
+
+				FVector direction = (centerMass.position - body->GetActorLocation()).GetSafeNormal();
+				float force = (10.0f * body->mass * centerMass.mass) / FVector::DistSquared(centerMass.position, body->GetActorLocation());
+				body->ApplyForce(DeltaTime * force * direction);
+			}
+		}
+		else{
+			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Theta: %f"), theta*theta));
+			if (!node->isLeaf){
+
+				for (OcNode* child : node->children){
+
+					CalculateForce(body, child, DeltaTime);
+				}
+			}
 		}
 	}
-	else{
 
-		if (!node->isLeaf)
-			for (OcNode* child : node->children){
+	//if (node->contains(body) == false){
 
-				CalculateForce(body, child, DeltaTime);
-			}
-	}
+	//	OcNode::CenterMass centerMass = node->centerMass;
+
+	//	if (centerMass.mass > 0 && FVector::DistSquared(body->GetActorLocation(), centerMass.position) > 100){
+
+	//		FVector direction = (centerMass.position - body->GetActorLocation()).GetSafeNormal();
+	//		float force = (10.0f * body->mass * centerMass.mass) / FVector::DistSquared(centerMass.position, body->GetActorLocation());
+	//		body->ApplyForce(DeltaTime * force * direction);
+	//	}
+	//}
+	//else{
+
+	//	if (!node->isLeaf)
+	//		for (OcNode* child : node->children){
+
+	//			CalculateForce(body, child, DeltaTime);
+	//		}
+	//}
 }
 
 void ABodyHandler::SetInitialVelocity(ABody *body, float force){
@@ -126,9 +152,12 @@ void ABodyHandler::SpawnDisc(const FVector& center, float radius, int objectCoun
 		float angle = (static_cast <float> (std::rand()) / static_cast <float> (RAND_MAX)) * M_PI * 2;
 		float dist = std::sqrt(static_cast <float> (std::rand()) / static_cast <float> (RAND_MAX)) * radius;
 
-		position = FVector(center.X + dist * std::cos(angle), center.Y + dist * std::sin(angle), center.Z);
+		float zJitter = 100 * static_cast <float> (std::rand()) / static_cast <float> (RAND_MAX) - 50;
+
+		position = FVector(center.X + dist * std::cos(angle), center.Y + dist * std::sin(angle), center.Z + zJitter);
 
 		ABody *body = GetWorld()->SpawnActor<ABody>(BodyTemplate, position, FRotator::ZeroRotator);
-		SetInitialVelocity(body, 100*dist);
+		SetInitialVelocity(body, 500000 / std::sqrt(dist+1) );
+		Bodies.push_back(body);
 	}
 }

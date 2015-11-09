@@ -4,7 +4,7 @@
 
 #include <list>
 #include <vector>
-#include <set>
+#include <unordered_set>
 #include "Body.h"
 
 /**
@@ -35,10 +35,13 @@ public:
 	bool insert(ABody* body);
 	void insert(std::vector<ABody*> bodies);
 	bool contains(ABody* body);
+	const FVector& getSize() const;
 
 	CenterMass centerMass;
 	OcNode *children[CHILD_COUNT];
 	bool isLeaf;
+
+	ABody* storedBody;
 
 private:
 	FVector origin;
@@ -47,7 +50,7 @@ private:
 
 	int objectCount;
 
-	std::set<ABody*> objects;
+	//std::unordered_set<ABody*> objects;
 
 	void split();
 	std::size_t indexOf(const FVector& point) const;
