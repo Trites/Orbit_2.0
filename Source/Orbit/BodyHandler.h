@@ -23,10 +23,16 @@ public:
 	// Called every frame
 	virtual void Tick( float DeltaSeconds ) override;
 
+	UPROPERTY(EditAnywhere, Category = "Template")
+	TSubclassOf<class ABody> BodyTemplate;
+
 private:
 	std::vector<ABody*> Bodies;
 	OcNode *ocNode;
 	int checkCounter = 0;
 	void CalculateForce(ABody* body, OcNode* node, float DeltaTime);
+	void SetInitialVelocity(ABody* body, float force);
+	void GetGalaxyArea(FVector& center, float& size, float padding = 100.0f);
+	void SpawnDisc(const FVector& center, float radius, int objectCount);
 	
 };

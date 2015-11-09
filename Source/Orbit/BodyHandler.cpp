@@ -1,10 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
+#define _USE_MATH_DEFINES
 #include "Orbit.h"
 #include "BodyHandler.h"
 #include "OcNode.h"
 #include <unordered_set>
-
+#include <math.h>
 
 // Sets default values
 ABodyHandler::ABodyHandler()
@@ -19,29 +19,20 @@ void ABodyHandler::BeginPlay()
 {
 	Super::BeginPlay();
 
+	SpawnDisc(FVector::ZeroVector, 1000, 800);
 	int c = 0;
-
 	for (TActorIterator<ABody> it(GetWorld()); it; ++it){
 
 		c++;
+		//SetInitialVelocity(*it);
 		Bodies.push_back(*it);
 	}
 
-	ocNode = new OcNode(FVector::ZeroVector, FVector(1000, 1000, 1000));
-	ocNode->insert(Bodies);
-
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Simulating %i bodies."), Bodies.size()));
 
-	OcNode *node = new OcNode(FVector::ZeroVector, FVector(1000, 1000, 1000));
-	std::unordered_set<OcNode*> objects;
-	delete node;
-	objects.insert(NULL);
+	//FActorSpawnParameters spawnParams;
+	//spawnParams.Owner = this;
 
-	int i = objects.count(NULL);
-
-
-
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Found %i hashed bodies."), i));
 }
 
 // Called every frame
@@ -49,32 +40,18 @@ void ABodyHandler::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	FVector galaxyCenter = FVector::ZeroVector;
+	float galaxySize = 0;
+
+	GetGalaxyArea(galaxyCenter, galaxySize);
+
 	delete ocNode;
-	ocNode = new OcNode(FVector::ZeroVector, FVector(1000, 1000, 1000));
+	ocNode = new OcNode(galaxyCenter, FVector(galaxySize, galaxySize, galaxySize));
 	ocNode->insert(Bodies);
 	ocNode->draw(GetWorld());
 
-	//FVector v(0, 0, 10);
-	checkCounter = 0;
 	for (ABody* body : Bodies)
 		CalculateForce(body, ocNode, DeltaTime);
-
-	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Checks %i "), checkCounter));
-	//for (int i = 0; i < Bodies.size(); i++){
-	//	for (int o = 0; o < Bodies.size(); o++){
-
-	//		if (i != o){
-
-	//			FVector posA = Bodies[i]->GetActorLocation();
-	//			FVector posB = Bodies[o]->GetActorLocation();
-
-	//			FVector direction = (posB - posA).GetSafeNormal();
-	//			float force = (100.0f * Bodies[i]->mass * Bodies[o]->mass) / FVector::DistSquared(posA, posB);
-
-	//			Bodies[i]->ApplyForce(DeltaTime*force*direction);
-	//		}
-	//	}
-	//}
 }
 
 void ABodyHandler::CalculateForce(ABody* body, OcNode* node, float DeltaTime){
@@ -88,9 +65,6 @@ void ABodyHandler::CalculateForce(ABody* body, OcNode* node, float DeltaTime){
 			FVector direction = (centerMass.position - body->GetActorLocation()).GetSafeNormal();
 			float force = (10.0f * body->mass * centerMass.mass) / FVector::DistSquared(centerMass.position, body->GetActorLocation());
 			body->ApplyForce(DeltaTime * force * direction);
-				
-			checkCounter++;
-			//DrawDebugLine(GetWorld(), body->GetActorLocation(), centerMass.position, FColor::Blue, false, -1, 0, 2);
 		}
 	}
 	else{
@@ -103,3 +77,58 @@ void ABodyHandler::CalculateForce(ABody* body, OcNode* node, float DeltaTime){
 	}
 }
 
+void ABodyHandler::SetInitialVelocity(ABody *body, float force){
+
+	FVector directionToCenter = (body->GetActorLocation() - FVector::ZeroVector).GetSafeNormal();
+	FVector forceDirection(directionToCenter.Y, -directionToCenter.X, directionToCenter.Z);
+
+	body->ApplyForce(forceDirection * force);
+}
+
+void ABodyHandler::GetGalaxyArea(FVector& center, float& size, float padding){
+
+	FVector min = FVector::ZeroVector;
+	FVector max = FVector::ZeroVector;
+
+	for (ABody* body : Bodies)
+	{
+		FVector pos = body->GetActorLocation();
+
+		if (pos.X < min.X)
+			min.X = pos.X;
+		else if (pos.X > max.X)
+			max.X = pos.X;
+
+		if (pos.Y < min.Y)
+			min.Y = pos.Y;
+		else if (pos.Y > max.Y)
+			max.Y = pos.Y;
+
+		if (pos.Z < min.Z)
+			min.Z = pos.Z;
+		else if (pos.Z > max.Z)
+			max.Z = pos.Z;
+	}
+
+	center = min + (max - min) * 0.5f;
+	size = std::fmaxf(std::fmaxf(max.X - min.X, max.Y - min.Y), max.Z - min.Z) + padding;
+}
+
+
+void ABodyHandler::SpawnDisc(const FVector& center, float radius, int objectCount){
+
+	UWorld* world = GetWorld();
+
+	FVector position;
+
+	for (int i = 0; i < objectCount; i++){
+
+		float angle = (static_cast <float> (std::rand()) / static_cast <float> (RAND_MAX)) * M_PI * 2;
+		float dist = std::sqrt(static_cast <float> (std::rand()) / static_cast <float> (RAND_MAX)) * radius;
+
+		position = FVector(center.X + dist * std::cos(angle), center.Y + dist * std::sin(angle), center.Z);
+
+		ABody *body = GetWorld()->SpawnActor<ABody>(BodyTemplate, position, FRotator::ZeroRotator);
+		SetInitialVelocity(body, 100*dist);
+	}
+}

@@ -25,7 +25,7 @@ public:
 
 	const unsigned int MAX_OBJECTS = 1;
 	static const unsigned int CHILD_COUNT = 8;
-	const float DEBUG_THIKNESS = 2.0f;
+	const float DEBUG_THIKNESS = 8.0f;
 
 	OcNode() = delete;
 	OcNode(FVector origin, FVector size);

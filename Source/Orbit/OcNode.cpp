@@ -28,12 +28,12 @@ void OcNode::draw(UWorld *world){
 			child->draw(world);
 
 
-		if (objectCount > 0)
-			DrawDebugPoint(world, centerMass.position, 16, FColor::Green);
+		//if (objectCount > 0)
+		//	DrawDebugPoint(world, centerMass.position, 16, FColor::Green);
 	}
 	else{
 
-		//FColor renderColor = objectCount > 0 ? FColor::Red : FColor::Black;
+		//FColor renderColor = objectCount > 0 ? FColor::Red : FColor::Blue;
 
 		//FVector topLeftBack(origin.X - size.X/2, origin.Y + size.Y/2, origin.Z - size.Z/2);
 		//FVector topRightBack(origin.X + size.X / 2, origin.Y + size.Y / 2, origin.Z - size.Z / 2);
