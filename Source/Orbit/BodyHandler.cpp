@@ -28,7 +28,7 @@ void ABodyHandler::BeginPlay()
 	}
 
 	//Spawn new bodies
-	SpawnDisc(FVector::ZeroVector, 1500, 2000);
+	SpawnDisc(FVector::ZeroVector, 1500, 2000, 100.0f);
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Simulating %i bodies."), Bodies.size()));
 }
 
@@ -141,7 +141,7 @@ void ABodyHandler::GetGalaxyArea(FVector& center, float& size, float padding){
 }
 
 
-void ABodyHandler::SpawnDisc(const FVector& center, float radius, int objectCount){
+void ABodyHandler::SpawnDisc(const FVector& center, float radius, int objectCount, float zJitter){
 
 	UWorld* world = GetWorld();
 
@@ -152,9 +152,9 @@ void ABodyHandler::SpawnDisc(const FVector& center, float radius, int objectCoun
 		float angle = (static_cast <float> (std::rand()) / static_cast <float> (RAND_MAX)) * M_PI * 2;
 		float dist = std::sqrt(static_cast <float> (std::rand()) / static_cast <float> (RAND_MAX)) * radius;
 
-		float zJitter = 100 * static_cast <float> (std::rand()) / static_cast <float> (RAND_MAX) - 50;
+		float zOffset = zJitter * static_cast <float> (std::rand()) / static_cast <float> (RAND_MAX)-zJitter / 2;
 
-		position = FVector(center.X + dist * std::cos(angle), center.Y + dist * std::sin(angle), center.Z + zJitter);
+		position = FVector(center.X + dist * std::cos(angle), center.Y + dist * std::sin(angle), center.Z + zOffset);
 
 		ABody *body = GetWorld()->SpawnActor<ABody>(BodyTemplate, position, FRotator::ZeroRotator);
 		SetInitialVelocity(body, 500000 / std::sqrt(dist+1) );

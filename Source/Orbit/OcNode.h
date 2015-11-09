@@ -46,11 +46,7 @@ public:
 private:
 	FVector origin;
 	FVector size;
-
-
 	int objectCount;
-
-	//std::unordered_set<ABody*> objects;
 
 	void split();
 	std::size_t indexOf(const FVector& point) const;

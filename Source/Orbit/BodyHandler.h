@@ -36,6 +36,6 @@ private:
 	void CalculateForce(ABody* body, OcNode* node, float DeltaTime);
 	void SetInitialVelocity(ABody* body, float force);
 	void GetGalaxyArea(FVector& center, float& size, float padding = 100.0f);
-	void SpawnDisc(const FVector& center, float radius, int objectCount);
+	void SpawnDisc(const FVector& center, float radius, int objectCount, float zJitter = 0);
 	
 };
