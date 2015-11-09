@@ -26,7 +26,7 @@ public:
 private:
 	std::vector<ABody*> Bodies;
 	OcNode *ocNode;
-
-	void CalculateForce(ABody* body, const OcNode* node, float DeltaTime);
+	int checkCounter = 0;
+	void CalculateForce(ABody* body, OcNode* node, float DeltaTime);
 	
 };

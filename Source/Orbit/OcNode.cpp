@@ -67,15 +67,13 @@ bool OcNode::insert(ABody* body){
 	centerMass.adjust(body->GetActorLocation(), body->mass);
 	objectCount++;
 
+	objects.insert(body);
+
 	if (isLeaf){
 
 		//If there is still room in this node we insert the new body.
 		//Otherwise we split the node.
-		if (objects.size() < MAX_OBJECTS){
-
-			objects.insert(body);
-		}
-		else{
+		if (objects.size() > MAX_OBJECTS){
 
 			split();
 
@@ -87,7 +85,7 @@ bool OcNode::insert(ABody* body){
 
 				children[indexOf(oldBody->GetActorLocation())]->insert(oldBody);
 			}
-			objects.clear();
+			//objects.clear();
 		}
 	}
 	else{
@@ -105,8 +103,9 @@ void OcNode::insert(std::vector<ABody*> bodies){
 		insert(body);
 }
 
-bool OcNode::contains(ABody* body) const{
+bool OcNode::contains(ABody* body){
 
+	//return false;
 	return objects.count(body) != 0;
 }
 
