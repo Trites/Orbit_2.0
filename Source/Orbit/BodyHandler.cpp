@@ -59,7 +59,7 @@ void ABodyHandler::Tick(float DeltaTime)
 	for (ABody* body : Bodies)
 		CalculateForce(body, ocNode, DeltaTime);
 
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Checks %i "), checkCounter));
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Checks %i "), checkCounter));
 	//for (int i = 0; i < Bodies.size(); i++){
 	//	for (int o = 0; o < Bodies.size(); o++){
 
@@ -90,7 +90,7 @@ void ABodyHandler::CalculateForce(ABody* body, OcNode* node, float DeltaTime){
 			body->ApplyForce(DeltaTime * force * direction);
 				
 			checkCounter++;
-			DrawDebugLine(GetWorld(), body->GetActorLocation(), centerMass.position, FColor::Blue, false, -1, 0, 2);
+			//DrawDebugLine(GetWorld(), body->GetActorLocation(), centerMass.position, FColor::Blue, false, -1, 0, 2);
 		}
 	}
 	else{
