@@ -17,7 +17,6 @@ ABody::ABody()
 void ABody::BeginPlay()
 {
 	Super::BeginPlay();
-	mesh = FindComponentByClass<UStaticMeshComponent>();
 }
 
 // Called every frame
@@ -25,9 +24,9 @@ void ABody::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
 
-	FVector newLocation = GetActorLocation();
-	newLocation += velocity * DeltaTime;
-	SetActorLocation(newLocation);
+	//FVector newLocation = GetActorLocation();
+	//newLocation += velocity * DeltaTime;
+	//SetActorLocation(newLocation);
 	//mesh->ComponentVelocity = velocity;
 }
 

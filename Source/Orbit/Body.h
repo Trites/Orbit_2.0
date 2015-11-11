@@ -29,8 +29,5 @@ public:
 
 private:
 
-	float runningTime;
 	FVector velocity;
-
-	UStaticMeshComponent* mesh;
 };

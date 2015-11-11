@@ -28,7 +28,7 @@ public:
 
 private:
 
-	const unsigned int MAX_THETA_SQUARED = 1000;
+	const unsigned int MAX_THETA_SQUARED = 150;
 
 	std::vector<ABody*> Bodies;
 	OcNode *ocNode;
