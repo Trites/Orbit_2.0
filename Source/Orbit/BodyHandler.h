@@ -28,12 +28,12 @@ public:
 
 private:
 
-	const unsigned int MAX_THETA_SQUARED = 150;
+	const unsigned int MAX_THETA_SQUARED = 10.0f;
 
 	std::vector<ABody*> Bodies;
 	OcNode *ocNode;
 	int checkCounter = 0;
-	void CalculateForce(ABody* body, OcNode* node, float DeltaTime);
+	void SimulateBody(ABody* body, OcNode* node, float DeltaTime);
 	void SetInitialVelocity(ABody* body, float force);
 	void GetGalaxyArea(FVector& center, float& size, float padding = 100.0f);
 	void SpawnDisc(const FVector& center, float radius, int objectCount, float zJitter = 0);

@@ -21,14 +21,9 @@ void ABodyHandler::BeginPlay()
 
 	int m = 0;
 	//Find bodies that are already active in the scene.
-	for (TActorIterator<ABody> it(GetWorld()); it; ++it){
-
-
-		Bodies.push_back(*it);
-	}
 
 	//Spawn new bodies
-	SpawnDisc(FVector::ZeroVector, 8000, 30000, 100.0f);
+	SpawnDisc(FVector::ZeroVector, 2000, 5000, 100.0f);
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Simulating %i bodies."), Bodies.size()));
 }
 
@@ -39,46 +34,50 @@ void ABodyHandler::Tick(float DeltaTime)
 	FVector galaxyCenter = FVector::ZeroVector;
 	float galaxySize = 0;
 
-	//GetGalaxyArea(galaxyCenter, galaxySize);
+	GetGalaxyArea(galaxyCenter, galaxySize);
 
 
-	//ocNode = new OcNode(galaxyCenter, FVector(galaxySize, galaxySize, galaxySize));
-	//ocNode->insert(Bodies);
-	//ocNode->draw(GetWorld());
+	ocNode = new OcNode(galaxyCenter, FVector(galaxySize, galaxySize, galaxySize));
+	ocNode->insert(Bodies);
 
-	//for (ABody* body : Bodies)
-	//	CalculateForce(body, ocNode, DeltaTime);
+	for (ABody* body : Bodies)
+		SimulateBody(body, ocNode, DeltaTime);
 
-	//delete ocNode;
+	ocNode->draw(GetWorld());
+
+	delete ocNode;
 }
 
-void ABodyHandler::CalculateForce(ABody* body, OcNode* node, float DeltaTime){
+void ABodyHandler::SimulateBody(ABody* body, OcNode* node, float DeltaTime){
 
 	OcNode::CenterMass centerMass = node->centerMass;
 
+	//If node hass no mass it can be disregarded
 	if (centerMass.mass > 0){
 
+		//Keep distance as squared to avoid expensive sqrt()
 		float distSquared = FVector::DistSquared(body->GetActorLocation(), centerMass.position);
-
-		//Assume grid is uniform
+ 
+		//Calculate theta, assuming node is of uniform size
 		float thetaSquared = (node->getSize().X * node->getSize().X) / distSquared;
 
-		if (node->isLeaf || thetaSquared < MAX_THETA_SQUARED){
+		//If theta is acceptable or if the node only contains one body we use for calculation
+		//Otherwise we traverse further down the tree
+		if (thetaSquared < MAX_THETA_SQUARED || node->isLeaf){
 
+			//Make sure that we don't calculate force from node that only contains current body
 			if (node->contains(body) == false){
-
 				FVector direction = (centerMass.position - body->GetActorLocation()).GetSafeNormal();
 				float force = (10.0f * body->mass * centerMass.mass) / distSquared;
 				body->ApplyForce(DeltaTime * force * direction);
+				node->isUsed = true;
 			}
 		}
 		else{
-			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Theta: %f"), theta*theta));
+			//If current node has children
 			if (!node->isLeaf){
-
 				for (OcNode* child : node->children){
-
-					CalculateForce(body, child, DeltaTime);
+					SimulateBody(body, child, DeltaTime);
 				}
 			}
 		}
@@ -129,22 +128,32 @@ void ABodyHandler::SpawnDisc(const FVector& center, float radius, int objectCoun
 
 	FVector position;
 
+	int armCount = 8;
+	int bodyPerArm = objectCount / armCount;
+	float angleStep = (M_PI * 2) / armCount;
+	float angleSpread = M_PI / 4;
+
 	for (int i = 0; i < objectCount; i++){
 
-		float angle = (static_cast <float> (std::rand()) / static_cast <float> (RAND_MAX)) * M_PI * 2;
-		//float dist = std::sqrt(static_cast <float> (std::rand()) / static_cast <float> (RAND_MAX)) * radius;
 
-		float dist = (static_cast <float> (std::rand()) / static_cast <float> (RAND_MAX)) * radius;
 
-		float zOffset = zJitter * static_cast <float> (std::rand()) / static_cast <float> (RAND_MAX)-zJitter / 2;
+
+		//float angle = (static_cast <float> (std::rand()) / static_cast <float> (RAND_MAX)) * M_PI * 2;
+		float dist = std::sqrt(static_cast <float> (std::rand()) / static_cast <float> (RAND_MAX)) * radius;
+		float angleJitter = (static_cast <float> (std::rand()) / static_cast <float> (RAND_MAX)) * angleSpread / (dist*dist*dist*0.0000000001) - (angleSpread / (dist*dist*dist*0.0000000001)) / 2;
+		float angle = (i / bodyPerArm) * angleStep + angleJitter;
+
+		//float dist = (static_cast <float> (std::rand()) / static_cast <float> (RAND_MAX)) * radius;
+
+		float zOffset = 100 * (zJitter * static_cast <float> (std::rand()) / static_cast <float> (RAND_MAX)-zJitter / 2) / (std::sqrt(dist) + 1);
 
 		position = FVector(center.X + dist * std::cos(angle), center.Y + dist * std::sin(angle), center.Z + zOffset);
 
 		ABody *body = GetWorld()->SpawnActor<ABody>(BodyTemplate, position, FRotator::ZeroRotator);
 
-		//float mass = 800 * (static_cast <float> (std::rand()) / static_cast <float> (RAND_MAX)) + 100;
+		float mass = 15 / dist + 100;
 
-		SetInitialVelocity(body, 500 * std::sqrt(dist) );
+		SetInitialVelocity(body, 400 * std::sqrt(dist) );
 		Bodies.push_back(body);
 	}
 }

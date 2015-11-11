@@ -24,10 +24,9 @@ void ABody::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
 
-	//FVector newLocation = GetActorLocation();
-	//newLocation += velocity * DeltaTime;
-	//SetActorLocation(newLocation);
-	//mesh->ComponentVelocity = velocity;
+	FVector newLocation = GetActorLocation();
+	newLocation += velocity * DeltaTime;
+	SetActorLocation(newLocation);
 }
 
 void ABody::SetVelocity(const FVector& v){

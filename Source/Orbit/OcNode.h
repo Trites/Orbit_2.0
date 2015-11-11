@@ -32,7 +32,7 @@ public:
 	~OcNode();
 
 	void draw(UWorld *world);
-	bool insert(ABody* body);
+	void insert(ABody* body);
 	void insert(std::vector<ABody*> bodies);
 	bool contains(ABody* body);
 	const FVector& getSize() const;
@@ -40,13 +40,14 @@ public:
 	CenterMass centerMass;
 	OcNode *children[CHILD_COUNT];
 	bool isLeaf;
+	bool isUsed;
 
 	ABody* storedBody;
 
 private:
 	FVector origin;
 	FVector size;
-	int objectCount;
+	//int objectCount;
 
 	void split();
 	std::size_t indexOf(const FVector& point) const;
