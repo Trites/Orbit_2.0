@@ -50,6 +50,6 @@ private:
 	//int objectCount;
 
 	void split();
-	std::size_t indexOf(const FVector& point) const;
+	std::size_t childIndexFor(const FVector& point) const;
 
 };
