@@ -27,9 +27,7 @@ public:
 	TSubclassOf<class ABody> BodyTemplate;
 
 private:
-
 	const unsigned int MAX_THETA_SQUARED = 10.0f;
-
 	std::vector<ABody*> Bodies;
 	OcNode *ocNode;
 	int checkCounter = 0;

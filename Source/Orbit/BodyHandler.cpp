@@ -19,11 +19,8 @@ void ABodyHandler::BeginPlay()
 {
 	Super::BeginPlay();
 
-	int m = 0;
-	//Find bodies that are already active in the scene.
-
 	//Spawn new bodies
-	SpawnDisc(FVector::ZeroVector, 2000, 5000, 100.0f);
+	SpawnDisc(FVector::ZeroVector, 500, 50, 100.0f);
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Simulating %i bodies."), Bodies.size()));
 }
 
@@ -34,15 +31,19 @@ void ABodyHandler::Tick(float DeltaTime)
 	FVector galaxyCenter = FVector::ZeroVector;
 	float galaxySize = 0;
 
+	//Gets the size needed to contain all bodies withing the ocnode.
 	GetGalaxyArea(galaxyCenter, galaxySize);
 
-
+	//Creates a base ocnode of the needed size and insert all bodies.
 	ocNode = new OcNode(galaxyCenter, FVector(galaxySize, galaxySize, galaxySize));
 	ocNode->insert(Bodies);
 
-	for (ABody* body : Bodies)
+	//Calculate forces for each body
+	for (ABody* body : Bodies){
 		SimulateBody(body, ocNode, DeltaTime);
+	}
 
+	//Draw ocnode grid
 	ocNode->draw(GetWorld());
 
 	delete ocNode;
@@ -94,8 +95,8 @@ void ABodyHandler::SetInitialVelocity(ABody *body, float force){
 
 void ABodyHandler::GetGalaxyArea(FVector& center, float& size, float padding){
 
-	FVector min = FVector::ZeroVector;
-	FVector max = FVector::ZeroVector;
+	FVector min = FVector(-100, -100, -100);
+	FVector max = FVector(100, 100, 100);
 
 	for (ABody* body : Bodies)
 	{
@@ -138,10 +139,10 @@ void ABodyHandler::SpawnDisc(const FVector& center, float radius, int objectCoun
 
 
 
-		//float angle = (static_cast <float> (std::rand()) / static_cast <float> (RAND_MAX)) * M_PI * 2;
+		float angle = (static_cast <float> (std::rand()) / static_cast <float> (RAND_MAX)) * M_PI * 2;
 		float dist = std::sqrt(static_cast <float> (std::rand()) / static_cast <float> (RAND_MAX)) * radius;
-		float angleJitter = (static_cast <float> (std::rand()) / static_cast <float> (RAND_MAX)) * angleSpread / (dist*dist*dist*0.0000000001) - (angleSpread / (dist*dist*dist*0.0000000001)) / 2;
-		float angle = (i / bodyPerArm) * angleStep + angleJitter;
+		//float angleJitter = (static_cast <float> (std::rand()) / static_cast <float> (RAND_MAX)) * angleSpread / (dist*dist*dist*0.0000000001) - (angleSpread / (dist*dist*dist*0.0000000001)) / 2;
+		//float angle = (i / bodyPerArm) * angleStep + angleJitter;
 
 		//float dist = (static_cast <float> (std::rand()) / static_cast <float> (RAND_MAX)) * radius;
 

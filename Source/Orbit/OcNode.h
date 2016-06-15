@@ -33,7 +33,7 @@ public:
 
 	void draw(UWorld *world);
 	void insert(ABody* body);
-	void insert(std::vector<ABody*> bodies);
+	void insert(const std::vector<ABody*>& bodies);
 	bool contains(ABody* body);
 	const FVector& getSize() const;
 

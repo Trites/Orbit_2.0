@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #include "Orbit.h"
 #include "OcNode.h"
 
@@ -91,7 +89,7 @@ void OcNode::insert(ABody* body){
 	children[childIndexFor(body->GetActorLocation())]->insert(body);
 }
 
-void OcNode::insert(std::vector<ABody*> bodies){
+void OcNode::insert(const std::vector<ABody*>& bodies){
 
 	for (ABody* body : bodies)
 		insert(body);
